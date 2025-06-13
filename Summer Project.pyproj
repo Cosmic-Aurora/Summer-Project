@@ -22,12 +22,28 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="File_examination.py" />
+    <Compile Include="HiGAL_Processing.py" />
+    <Compile Include="Separator.py" />
+    <Compile Include="Slicer.py" />
     <Compile Include="Summer_Project.py" />
+    <Compile Include="test.py" />
+    <Compile Include="testingPROMISE.py" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="CondaEnv|CondaEnv|env" />
     <InterpreterReference Include="CondaEnv|CondaEnv|spyder-runtime" />
     <InterpreterReference Include="Global|PythonCore|3.11" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\" />
+    <Folder Include="Data\Distances HiGAL\" />
+    <Folder Include="Data\PROMISE\" />
+    <Folder Include="Data\PROMISE\Clouds\" />
+    <Folder Include="Data\PROMISE\Slices\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include=".editorconfig" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
