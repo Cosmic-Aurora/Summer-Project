@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Data/PROMISE/Slices
+/Data/PROMISE/Full_Data.fits
+/Data/PROMISE/Masked_Data.fits
