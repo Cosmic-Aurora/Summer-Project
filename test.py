@@ -12,7 +12,7 @@ print(np.argmax(s[::],axis = 1))
 
 
 m = arr!=0
-print(m)
+print(m)    
 print(m.argmax())
 
 arr = np.trim_zeros(arr)
