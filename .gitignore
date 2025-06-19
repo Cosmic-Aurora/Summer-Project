@@ -365,3 +365,10 @@ FodyWeavers.xsd
 /Data/distances.fits
 /Data/PROMISE/Full_Data.fits
 /Data/PROMISE/Masked_Data.fits
+Data/clouds_5kpc.pkl
+.gitignore
+.gitignore
+Data/clouds_15kpc.pkl
+Data/clouds_20kpc.pkl
+Data/clouds.pkl
+Data/clouds_10kpc.pkl
