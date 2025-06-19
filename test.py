@@ -19,6 +19,28 @@ import cloud
 
 # arr = np.trim_zeros(arr)
 # print(arr)
+import matplotlib.pyplot as plt
+
 hdul = fits.open("Data/PROMISE/Clouds/slice_0_cloud_1.fits")
 data = np.loadtxt("Data/Distances_HiGAL/Useful.dat")
 c1 = cloud.Cloud(hdul, data)
+#c1.show_data(plt)
+#c1.property_list()
+hdul.close()
+
+hdul = fits.open("Data/PROMISE/Clouds/slice_0_cloud_2.fits")
+data = np.loadtxt("Data/Distances_HiGAL/Useful.dat")
+c2 = cloud.Cloud(hdul, data)
+#c1.show_data(plt)
+#c2.property_list()
+hdul.close()
+
+clouds = [c1,c2]
+#print(clouds[0])
+cloud.saveclouds(clouds, "Data/temp.pickle")
+
+loadedclouds = cloud.loadclouds("Data/temp.pickle")
+#print(loadedclouds[0])
+
+clouds[0].show_data(plt)
+loadedclouds[0].show_data(plt)
