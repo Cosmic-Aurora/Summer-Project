@@ -68,8 +68,8 @@ class Cloud:
         self.n = len(self.distances[:,0])
         self.mean = np.mean(self.distances[:,4])
         self.var = np.var(self.distances[:,4])
-        self.diff = np.max(self.distances[:,4], initial = -1)-np.min(self.distances[:,4], initial = -1)
-    
+        self.diff = np.max(self.distances[:,4], initial = -1)-np.min(self.distances[:,4], initial = 99)
+        
 
     def property_list(self):
         print(f"l0 = {self.l0} - galactic longitude coordinate in the bottom left corner")

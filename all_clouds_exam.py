@@ -9,7 +9,7 @@ variances = []
 means = []
 diff = []
 
-clouds = cloud.loadclouds("Data/clouds.pkl")
+clouds = cloud.loadclouds("Data/clouds_15kpc.pkl")
 keys = []
 
 for key in clouds:
@@ -23,20 +23,20 @@ for key in clouds:
 keys = np.array(keys)
 
 n_x = 4
-n_y = 3
+n_y = 2
 n_tot = n_x*n_y
 
 min_num = 1
 max_num = np.inf
 
 min_var = 0
-max_var = 0.5
+max_var = np.inf
 
 min_mean = -np.inf
 max_mean = np.inf
 
 min_diff = 0
-max_diff = np.inf
+max_diff = 0.5
 
 random = True
 
@@ -51,10 +51,10 @@ if random:
     selected_keys = keys[np.random.choice(within,size = n_tot, replace = False)]
 
 
-fig, ax = plt.subplots(n_y,n_x, figsize = (30,13))
+fig, ax = plt.subplots(n_y,n_x, figsize = (20,8))
 for i, k in enumerate(selected_keys):
-    x = int(i/4)
-    y = i%4
+    x = int(i/n_x)
+    y = i%n_x
     ax[x,y].imshow(clouds[k].data, cmap = "YlGn_r")
     ax[x,y].set_title(f"{k}, N = {clouds[k].n}")
     ax[x,y].set_xticks([])
@@ -63,6 +63,7 @@ for i, k in enumerate(selected_keys):
     ax[x,y].set_ylabel(f"var: {clouds[k].var}")
     scatter = ax[x,y].scatter(clouds[k].distances[:,0], clouds[k].distances[:,1], c = clouds[k].distances[:,4], cmap = "cool", s = 5)
     fig.colorbar(scatter,ax = ax[x,y])
+    print(k, clouds[k].diff)
 fig.tight_layout()
 plt.show()
     
@@ -76,8 +77,8 @@ plt.show()
 
 
 #print(hits)
-clearzeros = np.where(np.array(hits) == 0)[0]
-print(len(clearzeros))
+#clearzeros = np.where(np.array(hits) == 0)[0]
+#print(len(clearzeros))
 #variances = np.delete(variances, clearzeros)
 #hits = np.delete(hits, clearzeros)
 #means = np.delete(means, clearzeros)

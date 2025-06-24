@@ -12,7 +12,7 @@ def sorted_alphanumeric(data):
 directory = "Data/PROMISE/Clouds"
 data = np.loadtxt("Data/Distances_HiGAL/promise_slice.dat")
 
-distance = 20
+distance = 5
 
 remove = np.where(data[:,2] > distance)[0]
 pruned_data = np.delete(data, remove, axis = 0)
