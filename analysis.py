@@ -98,7 +98,7 @@ ax[1,4].bar(labels,ones, color = colors)
 ax[2,4].bar(labels, additional, color = colors)
 ax[3,4].bar(labels, complication, color = colors)
 fig.tight_layout()
-#plt.show()
+plt.show()
 
 n_x = 4
 n_y = 3

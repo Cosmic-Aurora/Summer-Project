@@ -26,7 +26,7 @@ for key in clouds:
         distances[int(central_y - clouds[key].yc): int(central_y - clouds[key].yc + clouds[key].delta_y),int(central_x - clouds[key].xc): int(central_x - clouds[key].xc + clouds[key].delta_x)] = mask
     elif clouds[key].n == 0:
         pass
-    elif clouds[key].diff > 0.5:
+    elif clouds[key].diff < 0.5:
         mask = clouds[key].data != 0
         mask = mask*clouds[key].mean
         distances[int(central_y - clouds[key].yc): int(central_y - clouds[key].yc + clouds[key].delta_y),int(central_x - clouds[key].xc): int(central_x - clouds[key].xc + clouds[key].delta_x)] = mask

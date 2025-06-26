@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import cloud
 
 
-slice = 5
-cloud_index = 280
-distance_limit = 15
+slice = 0
+cloud_index = 1
+distance_limit = 5
 
 clouds = cloud.loadclouds(f"Data/clouds_{distance_limit}kpc.pkl")
 cl = clouds[f"slice_{slice}_cloud_{cloud_index}.fits"]

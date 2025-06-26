@@ -9,9 +9,9 @@ variances = []
 means = []
 diff = []
 
-clouds = cloud.loadclouds("Data/clouds_15kpc.pkl")
+clouds = cloud.loadclouds("Data/clouds_10kpc.pkl")
 keys = []
-
+print(len(clouds))
 for key in clouds:
     keys.append(key)
     c = clouds[key]
@@ -29,14 +29,14 @@ n_tot = n_x*n_y
 min_num = 1
 max_num = np.inf
 
-min_var = 0
+min_var = 10
 max_var = np.inf
 
 min_mean = -np.inf
 max_mean = np.inf
 
 min_diff = 0
-max_diff = 0.5
+max_diff = np.inf
 
 random = True
 
@@ -63,7 +63,7 @@ for i, k in enumerate(selected_keys):
     ax[x,y].set_ylabel(f"var: {clouds[k].var}")
     scatter = ax[x,y].scatter(clouds[k].distances[:,0], clouds[k].distances[:,1], c = clouds[k].distances[:,4], cmap = "cool", s = 5)
     fig.colorbar(scatter,ax = ax[x,y])
-    print(k, clouds[k].diff)
+    #print(k, clouds[k].diff)
 fig.tight_layout()
 plt.show()
     

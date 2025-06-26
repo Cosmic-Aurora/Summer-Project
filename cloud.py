@@ -23,10 +23,11 @@ class Cloud:
     #   galactic longitude, 
     #   galactic latitude, 
     #   distance)
-    #   mean - mean value of the distances withing the mask
-    #   var - variance of the distances within the mask
-    #   n - number of distance measurements withing the mask
-    #   diff - difference between furthest distance data point and closest within mask (-1 if there is not data)
+    # mean - mean value of the distances withing the mask
+    # median - median value of the distances withing the mask
+    # var - variance of the distances within the mask
+    # n - number of distance measurements withing the mask
+    # diff - difference between furthest distance data point and closest within mask (-1 if there is not data)
 
 
     def __init__(self,hdul,position_data):
@@ -67,6 +68,7 @@ class Cloud:
         self.distances = np.hstack((x_values,y_values,final_data))
         self.n = len(self.distances[:,0])
         self.mean = np.mean(self.distances[:,4])
+        self.median = np.median(self.distances[:,4])
         self.var = np.var(self.distances[:,4])
         self.diff = np.max(self.distances[:,4], initial = -1)-np.min(self.distances[:,4], initial = 99)
         
@@ -88,10 +90,11 @@ class Cloud:
         print(f"delta_b = {self.delta_b} - height of the file in degrees")
 
     def show_data(self, plt):
-        plt.imshow(self.data)
+        plt.imshow(self.data, cmap = "YlGn_r")
         x = self.distances[:,0]
         y = self.distances[:,1]
-        plt.scatter(x,y, color = "green")
+        plt.scatter(x,y, c = self.distances[:,4], cmap = "cool")
+        plt.colorbar()
         plt.show()
 
 
