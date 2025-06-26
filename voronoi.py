@@ -1,4 +1,4 @@
-def voronai(points, data):
+def voronoi(points, data):
     import numpy as np
     vor = np.zeros_like(data)
     mask = data != 0
@@ -20,7 +20,7 @@ clouds = cloud.loadclouds(f"Data/clouds_{distance_limit}kpc.pkl")
 cl = clouds[f"slice_{slice}_cloud_{cloud_i}.fits"]
 points = cl.distances[:,:2]
 data = cl.data
-vor = voronai(points, data)
+vor = voronoi(points, data)
 
 masked_vor = np.zeros_like(vor)
 for i in range(len(points)):

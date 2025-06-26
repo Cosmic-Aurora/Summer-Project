@@ -97,6 +97,15 @@ class Cloud:
         plt.colorbar()
         plt.show()
 
+    def remove_row(self, i):
+        import numpy as np
+        self.distances = np.delete(self.distances, i, axis = 0)
+        self.n = len(self.distances[:,0])
+        self.mean = np.mean(self.distances[:,4])
+        self.median = np.median(self.distances[:,4])
+        self.var = np.var(self.distances[:,4])
+        self.diff = np.max(self.distances[:,4], initial = -1)-np.min(self.distances[:,4], initial = 99)       
+
 
 def saveclouds(clouds, filename):
     import pickle
