@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
 import sklearn as sk
-from voronoi import voronoi
+#from voronoi import voronoi
 
 hdul = fits.open("Data/PROMISE/Full_Data.fits")
 hdr = hdul[0].header
@@ -59,7 +59,7 @@ for key in clouds:
         continue
     points = clouds[key].distances[:,:2]
     data = clouds[key].data
-    vor = voronoi(points, data)
+    #vor = voronoi(points, data)
 
 
 

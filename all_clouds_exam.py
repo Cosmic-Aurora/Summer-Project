@@ -26,10 +26,10 @@ n_x = 4
 n_y = 2
 n_tot = n_x*n_y
 
-min_num = 1
+min_num = 10
 max_num = np.inf
 
-min_var = 10
+min_var = 0
 max_var = np.inf
 
 min_mean = -np.inf
