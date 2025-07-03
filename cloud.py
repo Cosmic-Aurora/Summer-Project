@@ -66,6 +66,7 @@ class Cloud:
         y_values = np.array([np.delete(y, remove2)]).T
         final_data = np.delete(pruned_data, remove2, axis = 0)
         self.distances = np.hstack((x_values,y_values,final_data))
+        
         self.n = len(self.distances[:,0])
         self.mean = np.mean(self.distances[:,4])
         self.median = np.median(self.distances[:,4])

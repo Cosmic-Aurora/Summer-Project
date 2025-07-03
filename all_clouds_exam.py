@@ -26,7 +26,7 @@ n_x = 4
 n_y = 2
 n_tot = n_x*n_y
 
-min_num = 10
+min_num = 0
 max_num = np.inf
 
 min_var = 0
@@ -35,13 +35,19 @@ max_var = np.inf
 min_mean = -np.inf
 max_mean = np.inf
 
-min_diff = 0
+min_diff = 0.5
 max_diff = np.inf
 
 random = True
 
 within = np.where(np.all((np.array(hits) >= min_num, np.array(hits) <= max_num, np.array(variances) >= min_var, np.array(variances) <= max_var, np.array(means) >= min_mean, np.array(means) <= max_mean, np.array(diff) >= min_diff, np.array(diff) <= max_diff), axis = 0))[0]
 print(len(within))
+
+selected_clouds = {}
+for key in keys[within]:
+    selected_clouds[key] = clouds[key]
+print(keys[within])
+cloud.saveclouds(selected_clouds, "Data/selected_clouds.pkl")
 
 if len(within) < n_tot:
     n_tot = len(within)

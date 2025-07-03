@@ -1,11 +1,23 @@
-def voronoi(points, data):
+def area_spread(labeled_image, mask, step_size = 5): # can be used a svoronoi with step_size = big (image size)
     import numpy as np
-    vor = np.zeros_like(data)
-    mask = data != 0
-    vor = np.array([[np.argmin(np.linalg.norm(points[:, ::-1] - np.array([i, j]), axis=1)) + 1 for j in range(vor.shape[1])]for i in range(vor.shape[0])])
-    masked_voronai = vor*mask
-    return masked_voronai
+    import skimage as sk
+    if not np.all(labeled_image == 0):
+        while True:
+            unmasked_image = sk.segmentation.expand_labels(labeled_image, distance = step_size)
+            labeled_image = unmasked_image*mask
+            if np.all((labeled_image != 0) == mask):
+                return labeled_image
+    else:
+        raise TypeError("Labeled image must have labels.")
 
+def voronoi(labeled_image, mask):
+    return area_spread(labeled_image, mask, np.inf)
+
+def points_to_labels(points, data):
+    labels = np.zeros_like(data)
+    for i,p in enumerate(points.astype(int)):
+        labels[p[1],p[0]] = i + 1
+    return labels
 
 import numpy as np
 import cloud
@@ -20,12 +32,15 @@ clouds = cloud.loadclouds(f"Data/clouds_{distance_limit}kpc.pkl")
 cl = clouds[f"slice_{slice}_cloud_{cloud_i}.fits"]
 points = cl.distances[:,:2]
 data = cl.data
-vor = voronoi(points, data)
+mask = data != 0
+
+lables = points_to_labels(points, data)
+
+vor = area_spread(lables, mask)
 
 masked_vor = np.zeros_like(vor)
 for i in range(len(points)):
     masked_vor = np.where(vor.astype(int) == i+1, cl.distances[i,4],masked_vor)
-
 
 fig, ax = plt.subplots(1,2)
 imgage = ax[0].imshow(masked_vor, cmap = "YlGn_r")
