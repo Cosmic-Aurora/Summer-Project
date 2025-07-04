@@ -19,10 +19,9 @@ def points_to_labels(points, data, min_value = 0):
         labels[p[1],p[0]] = i + 1 + min_value
     return labels
 
-def dendro_to_distance(d, mask, points, distances):
+def dendro_to_distance(d, mask, points, distances, counter = 0):
     import numpy as np
     distance_matrix = np.zeros_like(mask).astype(float)
-    counter = 0
     for s in d.trunk:
         distance_matrix, counter = main_loop(d, s, mask, distance_matrix, points, distances, counter)
     print(f"Counter: {counter}")
@@ -43,6 +42,7 @@ def main_loop(d, s, mask, distance_matrix, points, distances, counter):
     for i, p in enumerate(points):
         if structure_mask[int(p[1]),int(p[0])]:
             points_within.append(i)
+    points_within = np.array(points_within)
     if np.abs(np.max(distances[points_within])-np.min(distances[points_within])) < 0.5:
         distance_matrix[ind_x,ind_y] = float(np.mean(distances[points_within]))
         return distance_matrix, counter
@@ -57,7 +57,7 @@ def main_loop(d, s, mask, distance_matrix, points, distances, counter):
             for i in range(len(distance_means)):
                 distance_matrix = np.where(labeled_image == i+1, distance_means[i], distance_matrix)
             return distance_matrix, counter
-        elif np.all(d.structure_at(points[i,::-1].astype(int)) != s for i in points_within): # no new points on this branch that arent from an above branch/leaf
+        elif s not in [d.structure_at(points[i,::-1].astype(int)) for i in points_within]: # no new points on this branch that arent from an above branch/leaf
             unique_distances = np.unique(distance_matrix)[1:]
             groups = sk.cluster.DBSCAN(eps = 0.5, min_samples = 1).fit(unique_distances.reshape(-1,1))
             distance_means = unique_distances
@@ -72,8 +72,8 @@ def main_loop(d, s, mask, distance_matrix, points, distances, counter):
             return distance_matrix, counter
         else:
             counter += 1
-            structure_mean = np.mean(distances[np.where(d.structure_at(points[i,::-1].astype(int)) != s for i in points_within)])
-            distance_matrix = np.where(distance_matrix == 0, structure_mean, distance_matrix)*structure_mask
+            structure_mean = np.mean(distances[points_within[np.where(np.array([d.structure_at(points[i,::-1].astype(int)) for i in points_within]) == s)[0]]])
+            distance_matrix = np.where(distance_matrix == 0, structure_mean*structure_mask, distance_matrix)
             unique_distances = np.unique(distance_matrix)[1:]
             groups = sk.cluster.DBSCAN(eps = 0.5, min_samples = 1).fit(unique_distances.reshape(-1,1))
             distance_means = unique_distances
