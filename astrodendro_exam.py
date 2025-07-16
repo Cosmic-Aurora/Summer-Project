@@ -17,6 +17,8 @@ def iterations(l, leaflist):
 clouds = cloud.loadclouds("Data/selected_clouds.pkl")
 keys = []
 
+smoothing = 6
+
 total_datapoints = 0
 
 conflicted_leafs = 0
@@ -40,7 +42,7 @@ for key in clouds:
     points = cl.distances[:,:2]
     total_datapoints += len(points)
     data = cl.data
-    g_data = sc.ndimage.gaussian_filter(data,)
+    g_data = sc.ndimage.gaussian_filter(data,smoothing)
     d = ad.Dendrogram.compute(g_data, min_delta = 0.1, min_value = 0.1, is_independent = ad.pruning.contains_seeds(points[:,::-1].T.astype(int)))
     #d = ad.Dendrogram.compute(g_data, min_delta = 0.1, min_value = 0.1)
     trunks += len(d.trunk)

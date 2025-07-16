@@ -22,18 +22,22 @@ def points_to_labels(points, data, min_value = 0):
 def dendro_to_distance(d, mask, points, distances, counter = 0):
     import numpy as np
     distance_matrix = np.zeros_like(mask).astype(float)
+    confidence_matrix = np.zeros_like(mask).astype(int)
     for s in d.trunk:
-        distance_matrix, counter = main_loop(d, s, mask, distance_matrix, points, distances, counter)
-    print(f"Counter: {counter}")
-    return distance_matrix, counter
+        distance_matrix, confidence_matrix, counter = main_loop(d, s, mask, distance_matrix, confidence_matrix, points, distances, counter)
+    return distance_matrix, confidence_matrix, counter
 
-def main_loop(d, s, mask, distance_matrix, points, distances, counter):
+def main_loop(d, s, mask, distance_matrix, confidence_matrix, points, distances, counter):
     import numpy as np
     import sklearn as sk
     import skimage as si
+    A = 4 # Non-conflicting clouds
+    B = 3 # Non-conflicting leaves/branches with conflicts below
+    C = 2 # Conflicting leaves
+    D = 1 # Conflicting branches (the rest)
     if s.is_branch:
         for c in s.children:
-            distance_matrix, counter = main_loop(d, c, mask, distance_matrix, points, distances, counter)
+            distance_matrix, confidence_matrix, counter = main_loop(d, c, mask, distance_matrix, confidence_matrix, points, distances, counter)
     ind_x = s.indices()[0]
     ind_y = s.indices()[1]
     structure_mask = np.zeros_like(mask)
@@ -46,7 +50,8 @@ def main_loop(d, s, mask, distance_matrix, points, distances, counter):
     
     if np.abs(np.max(distances[points_within])-np.min(distances[points_within])) < 0.5:
         distance_matrix[ind_x,ind_y] = float(np.mean(distances[points_within]))
-        return distance_matrix, counter
+        confidence_matrix[ind_x,ind_y] = A
+        return distance_matrix, confidence_matrix, counter
     else: 
         if s.is_leaf:
             groups = sk.cluster.DBSCAN(eps = 0.5, min_samples = 1).fit(distances[points_within].reshape(-1,1))
@@ -57,7 +62,8 @@ def main_loop(d, s, mask, distance_matrix, points, distances, counter):
             labeled_image = voronoi(labels, structure_mask)
             for i in range(len(distance_means)):
                 distance_matrix = np.where(labeled_image == i+1, distance_means[i], distance_matrix)
-            return distance_matrix, counter
+            confidence_matrix[ind_x, ind_y] = C
+            return distance_matrix, confidence_matrix, counter
         elif s not in [d.structure_at(points[i,::-1].astype(int)) for i in points_within]: # no new points on this branch that arent from an above branch/leaf
             unique_distances = np.unique(distance_matrix)[1:]
             groups = sk.cluster.DBSCAN(eps = 0.5, min_samples = 1).fit(unique_distances.reshape(-1,1))
@@ -70,7 +76,9 @@ def main_loop(d, s, mask, distance_matrix, points, distances, counter):
             labeled_image = area_spread(labeled_image, structure_mask)
             for i in range(len(distance_means)):
                 distance_matrix = np.where(labeled_image == i+1, distance_means[i], distance_matrix)
-            return distance_matrix, counter
+            confidence_matrix = np.where(confidence_matrix == A, B, confidence_matrix)
+            confidence_matrix = np.where(confidence_matrix == 0, D*structure_mask, confidence_matrix)
+            return distance_matrix, confidence_matrix, counter
         else:
             counter += 1
             
@@ -96,73 +104,56 @@ def main_loop(d, s, mask, distance_matrix, points, distances, counter):
                 distance_means = np.where(groups.labels_ == i, np.mean(all_distances[np.where(groups.labels_==i)]),distance_means)
             for i in range(len(unique_distances)):
                 distance_matrix = np.where(distance_matrix == all_distances[i], distance_means[i], distance_matrix)
-            return distance_matrix, counter
+            confidence_matrix = np.where(confidence_matrix == A, B, confidence_matrix)
+            confidence_matrix = np.where(confidence_matrix == 0, D*structure_mask, confidence_matrix)
+            return distance_matrix, confidence_matrix, counter
 
-def allstructures(s, matrix, i):
-    ind_x = s.indices()[0]
-    ind_y = s.indices()[1]
-    matrix[ind_x,ind_y] = i + 10
-    i += 1
-    if s.is_branch:
-        for l in s.children:
-            matrix, i = allstructures(l, matrix, i)
-    return matrix, i
-
-
-
-
-
-
-import numpy as np
 import cloud
+import numpy as np
 import matplotlib.pyplot as plt
+from astropy.io import fits
 import sklearn as sk
-import astrodendro as ad
 import scipy as sc
+import astrodendro as ad
 
-slice = 0
-cloud_i = 1
-distance_limit = 10
+hdul = fits.open("Data/PROMISE/Full_Data.fits")
+hdr = hdul[0].header
+full_data = hdul[0].data
+full_distances = np.zeros_like(full_data)
+confidence = np.zeros_like(full_data)
+
+clouds = cloud.loadclouds("Data/clouds_10kpc.pkl")
 counter = 0
-single_cloud = True
+keys = []
 
-clouds = cloud.loadclouds(f"Data/selected_clouds.pkl")
-org_clouds = clouds
-
-if single_cloud:
-    clouds = [f"slice_{slice}_cloud_{cloud_i}.fits"]
+central_x = hdr["CRPIX1"]
+central_y = hdr["CRPIX2"]
 
 for key in clouds:
-    cl = org_clouds[key]
-
+    cl = clouds[key]
+    if cl.n == 0:
+        print(f"Done with cloud {key} and counter is at {counter}.")
+        continue
+    
     points = cl.distances[:,:2]
     distances = cl.distances[:,4]
     data = cl.data
     mask = data != 0
-
-
-    g_data = sc.ndimage.gaussian_filter(data,5)
+    g_data = sc.ndimage.gaussian_filter(data,5)*mask
     d = ad.Dendrogram.compute(g_data, min_delta = 0.1, min_value = 0.1, is_independent = ad.pruning.contains_seeds(points[:,::-1].T.astype(int)))
 
-    distance_matrix, counter = dendro_to_distance(d, mask, points, distances, counter)
+    distance_matrix, confidence_matrix, counter = dendro_to_distance(d, mask, points, distances, counter)
+    full_distances[int(central_y - clouds[key].yc): int(central_y - clouds[key].yc + clouds[key].delta_y),int(central_x - clouds[key].xc): int(central_x - clouds[key].xc + clouds[key].delta_x)] += distance_matrix
+    confidence[int(central_y - clouds[key].yc): int(central_y - clouds[key].yc + clouds[key].delta_y),int(central_x - clouds[key].xc): int(central_x - clouds[key].xc + clouds[key].delta_x)] += confidence_matrix
+    
     print(f"Done with cloud {key} and counter is at {counter}.")
 
-v = d.viewer()
-v.show()
+hdr.set("NAXIS", 3)
+hdr.set("NAXIS3", 2, after = "NAXIS2")
 
-test_mask = np.zeros_like(data)
-i = 0
-for l in d:
-    test_mask, i =  allstructures(l, test_mask, i)
+data = np.array([full_distances, confidence]).astype(np.float32)
 
-fig, ax =  plt.subplots(1,2,figsize = (8,8))
-ax[0].imshow(data, cmap = "YlGn_r")
-ax[0].imshow(distance_matrix, alpha = 0.3)
-scatter = ax[0].scatter(points[:,0], points[:,1], c = cl.distances[:,4], s = 5)
-fig.colorbar(scatter, ax = ax[0])
 
-ax[1].imshow(data, cmap = "YlGn_r")
-ax[1].imshow(test_mask, alpha = 0.3)
-ax[1].scatter(points[:,0], points[:,1], c = cl.distances[:,4])
-
-plt.show()
+hdu_new = fits.PrimaryHDU(data, hdr)
+hdul_new = fits.HDUList([hdu_new])
+hdu_new.writeto(fr"Data/dist_10_v1.fits", overwrite = True)

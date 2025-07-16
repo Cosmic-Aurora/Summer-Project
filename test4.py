@@ -18,6 +18,16 @@ def points_to_labels(points, data):
     for i,p in enumerate(points.astype(int)):
         labels[p[1],p[0]] = i + 1
     return labels
+import numpy as np
+
+test = np.zeros(5,5)
+mask = np.ones(5,5)
+test[2,2] = 2
+test[1,1:3] = 1
+test[3, 1:3] = 1
+test[2,1] = 1
+test[2,3] = 1
+print(test)
 
 import numpy as np
 import cloud
