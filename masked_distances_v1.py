@@ -59,7 +59,7 @@ def main_loop(d, s, mask, distance_matrix, confidence_matrix, points, distances,
             for i in range(np.max(groups.labels_)):    
                 distance_means = np.where(groups.labels_ == i, np.mean(distances[np.where(groups.labels_==i)]),distance_means) 
             labels = points_to_labels(points[points_within], structure_mask)
-            labeled_image = voronoi(labels, structure_mask)
+            labeled_image = area_spread(labels, structure_mask)
             for i in range(len(distance_means)):
                 distance_matrix = np.where(labeled_image == i+1, distance_means[i], distance_matrix)
             confidence_matrix[ind_x, ind_y] = C
@@ -76,7 +76,7 @@ def main_loop(d, s, mask, distance_matrix, confidence_matrix, points, distances,
             labeled_image = area_spread(labeled_image, structure_mask)
             for i in range(len(distance_means)):
                 distance_matrix = np.where(labeled_image == i+1, distance_means[i], distance_matrix)
-            confidence_matrix = np.where(confidence_matrix == A, B, confidence_matrix)
+            confidence_matrix = np.where(confidence_matrix*structure_mask == A, B, confidence_matrix)
             confidence_matrix = np.where(confidence_matrix == 0, D*structure_mask, confidence_matrix)
             return distance_matrix, confidence_matrix, counter
         else:
@@ -104,7 +104,7 @@ def main_loop(d, s, mask, distance_matrix, confidence_matrix, points, distances,
                 distance_means = np.where(groups.labels_ == i, np.mean(all_distances[np.where(groups.labels_==i)]),distance_means)
             for i in range(len(unique_distances)):
                 distance_matrix = np.where(distance_matrix == all_distances[i], distance_means[i], distance_matrix)
-            confidence_matrix = np.where(confidence_matrix == A, B, confidence_matrix)
+            confidence_matrix = np.where(confidence_matrix*structure_mask == A, B, confidence_matrix)
             confidence_matrix = np.where(confidence_matrix == 0, D*structure_mask, confidence_matrix)
             return distance_matrix, confidence_matrix, counter
 
