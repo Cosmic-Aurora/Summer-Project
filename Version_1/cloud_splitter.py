@@ -3,17 +3,14 @@ import numpy as np
 from scipy import ndimage
 import cloud
 
-distances = np.loadtxt("Version_1/Data/distances.dat",usecols = (3,4,8)) # Load in distance data files
+distances = np.loadtxt("Data/distances.dat",usecols = (3,4,8)) # Load in distance data files
 useless = np.where(np.any((distances[:,2] <=0, distances[:,2] > 10, distances[:,0] < 0, distances[:,0] > 40, distances[:,2] == 0., np.abs(distances[:,1] > 1.16)), axis = 0))[0] # Find useless distance row indices (No measurement or outside of PROMISE range)
 useful_distances = np.delete(distances, useless, axis = 0) # Remove useless rows
 
-hdul = fits.open("Version_1/Data/Masked_Data.fits") # Load in masked PROMISE data from FITS file
-data = hdul[0].data # Extract the maksed data
+hdul = fits.open("Data/Masked_Data.fits") # Load in masked PROMISE data from FITS file
+data = hdul[0].data # Extract the masked data
 hdr = hdul[0].header
 hdul.close()
-
-if data.dtype.byteorder == ">": # Used to avoid "ValueError: Big-endian buffer not supported on little-endian compiler"
-    data = data.view(data.dtype.newbyteorder()).byteswap()
 
 sections_vertical = [0]
 for x in range(0, np.shape(data)[1]-1): # Finds places to slice the total data file
@@ -27,26 +24,28 @@ unsorted_clouds = []
 for j in range(len(sections_vertical)-1):
 
     data_slice = data[:,sections_vertical[j]:sections_vertical[j+1]]
+    
+    if data_slice.dtype.byteorder == ">": # Used to avoid "ValueError: Big-endian buffer not supported on little-endian compiler"
+        data_slice = data_slice.view(data_slice.dtype.newbyteorder()).byteswap()
 
+    
     labels, num = ndimage.label(data_slice) # num = number of clouds, labels = labeled matrix the same size as data
 
     for i in range(1,num + 1):
-        cloud_data = np.where(labels == i, data_slice, 0) # Keep data that is in he cloud mask, remove all other
-        only_cloud = np.trim_zeros(cloud_data) # Remove redundant zeros to make the data matrix as small as possible
-
+        cloud_data = np.trim_zeros(np.where(labels == i, data_slice, 0)) # Keep data that is in he cloud mask, remove all other
+        
         mask = np.where(labels == i, True, False) # Create a mask for the data in the full file in order to extract the position of the lower left corner of the mask
         argmaxy = np.argmax(mask, axis = 0)
         argmaxx = np.argmax(mask, axis = 1)
         deltay = np.min(argmaxy[argmaxy != 0])
         deltax = np.min(argmaxx[argmaxx != 0]) + sections_vertical[j]
-        del mask
-        del cloud_data
+        
         xdists.append(deltax) # Appends the cloud and its distance to the y-axis (in pixels)
-        unsorted_clouds.append(cloud.Cloud(only_cloud, useful_distances, hdr, deltax, deltay)) 
-
+        unsorted_clouds.append(cloud.Cloud(cloud_data.copy(), useful_distances, hdr, deltax, deltay)) 
         print(f"Done with {i}/{num} in slice {j}.")
 
-sorted_clouds = [c for _, c in sorted(zip(xdists,unsorted_clouds))] # Sorts the cloud list based on the xdist list
+
+sorted_clouds = [c for _,_, c in sorted(zip(xdists,range(len(xdists)),unsorted_clouds))] # Sorts the cloud list based on the xdist list
 
 clouds = {}
 
