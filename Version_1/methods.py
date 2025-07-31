@@ -29,6 +29,38 @@ def dendro_to_distance(d, mask, points, distances): #Initiates distance determin
         distance_matrix, confidence_matrix = distance_loop(d, s, mask, distance_matrix, confidence_matrix, points, distances)
     return distance_matrix, confidence_matrix
 
+def id_assignment(id_matrix, distance_matrix, confidence_matrix, table, points, counter, cloud):
+    import numpy as np
+    from scipy import ndimage
+    masked_distance = (confidence_matrix >= 3)*distance_matrix
+    labels, nums = ndimage.label(masked_distance.T)
+    labels = labels.T
+    for i in range(nums):
+        id_matrix = np.where(labels == i+1, counter, id_matrix)
+        mask = id_matrix == counter
+        distance = masked_distance*mask
+        confidence = confidence_matrix*mask
+        y,x = np.unravel_index(distance.argmax(), distance.shape)
+        l = cloud.l0+x*cloud.dl
+        b = cloud.b0+y*cloud.db
+        dist = np.unique(distance)[1]
+        pixel_area = dist**2*np.abs(cloud.dl*cloud.db*np.pi**2/(180**2))*10**2
+        area = np.sum(mask)*pixel_area
+        conf = "A"
+        if np.unique(confidence)[1] == 3:
+            conf = "B"
+        mass = np.sum(cloud.data)*pixel_area
+        no_of_points = 0
+        for i, p in enumerate(points):
+            if mask[int(p[1]),int(p[0])]:
+                no_of_points += 1
+        table_row = np.array([counter, l, b, area, dist, conf, mass, no_of_points])
+        table = np.vstack((table, table_row))
+        counter += 1
+    return id_matrix, table, counter
+    
+    
+
 def distance_loop(d, s, mask, distance_matrix, confidence_matrix, points, distances): # Loops through the dendrogram, assignaing distances and certanties to areas
     import numpy as np
     import sklearn as sk

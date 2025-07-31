@@ -87,7 +87,8 @@ class Cloud:
         print(f"delta_l = {self.delta_l} - width of the file in degrees")
         print(f"delta_b = {self.delta_b} - height of the file in degrees")
 
-    def show_data(self, plt): # Plots the data as well as the distance points within the cloud
+    def show_data(self): # Plots the data as well as the distance points within the cloud
+        import matplotlib.pyplot as plt
         plt.imshow(self.data, cmap = "YlGn_r")
         x = self.distances[:,0]
         y = self.distances[:,1]

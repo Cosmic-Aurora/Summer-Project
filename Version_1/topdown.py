@@ -10,7 +10,7 @@ confidence = hdul[0].data[1]
 hdul = fits.open("Data/Full_Data.fits") # Open full PROMISE data file
 magnitude = hdul[0].data
 
-conf = 1 # Lowest confidence level distance to be included
+conf = 3 # Lowest confidence level distance to be included
 
 mask = confidence >= conf # Removes all distance data with too low confidence
 distances = data*mask
@@ -45,4 +45,4 @@ for i in range(len(distances)): # Iterates through each pixel in the distance ma
 for i, t in enumerate(topdown): # Creates and saves an image for each scaling factor
     plt.figure(figsize = (16,8))
     plt.imshow(np.log(t+1), origin="lower", extent=(-6.5,0,0,10))
-    plt.savefig(f"Product/Images/milky_way_{10*scaling_factors[i]}_px.png", dpi = 1000, bbox_inches="tight")
+    plt.savefig(f"Product/Images/milky_way_{10*scaling_factors[i]}_px_AB.png", dpi = 1000, bbox_inches="tight")
