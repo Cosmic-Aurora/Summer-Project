@@ -89,7 +89,7 @@ class Cloud:
 
     def show_data(self): # Plots the data as well as the distance points within the cloud
         import matplotlib.pyplot as plt
-        plt.imshow(self.data, cmap = "YlGn_r")
+        plt.imshow(self.data, cmap = "YlGn_r", origin = "lower")
         x = self.distances[:,0]
         y = self.distances[:,1]
         plt.scatter(x,y, c = self.distances[:,4], cmap = "cool")

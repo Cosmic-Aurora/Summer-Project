@@ -4,6 +4,7 @@ from astropy.io import fits
 import scipy as sc
 import astrodendro as ad
 from methods import *
+import pandas as pd
 
 hdul = fits.open("Data/Full_Data.fits") # Opens the PROMISE data (this is used purely to determine the size of the matrix that is to be created, as well as to copy the header and extract some values)
 hdr = hdul[0].header
@@ -42,13 +43,17 @@ for key in clouds: # Iterates through each cloud
     print(f"Done with cloud {key[6:]} out of {len(clouds)-1}.")
 
 table = table[1:]
-np.savetxt("Product/id_list.txt", table,fmt="%s", delimiter="\t") # Saves the matrix
+df = pd.DataFrame(table, columns = ["ID", "l", "b", "Area [pc^2]", "Distance", "Flag", "Mass", "# of distance points"])
+
+max_lengths = df.map(str).map(len).max()
+df = df.apply(lambda col: col.str.pad(max_lengths[col.name], side='right'))
+
+df.to_csv("ID_list.tsv", index = False, sep = "\t")
 
 hdr.set("NAXIS", 3) # Update headers
 hdr.set("NAXIS3", 3, after = "NAXIS2")
 
 data = np.array([full_distances, confidence, identities]).astype(np.float32) # Combine 2 2D matrices to a 3D one
-
 
 hdu_new = fits.PrimaryHDU(data, hdr) # Save the combines distance and confidence matrix to a FITS file
 hdul_new = fits.HDUList([hdu_new])
