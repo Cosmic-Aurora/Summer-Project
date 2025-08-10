@@ -4,7 +4,7 @@ from scipy import ndimage
 import cloud
 
 distances = np.loadtxt("Data/distances.dat",usecols = (3,4,8)) # Load in distance data files
-useless = np.where(np.any((distances[:,2] <=0, distances[:,2] > 10, distances[:,0] < 0, distances[:,0] > 40, distances[:,2] == 0., np.abs(distances[:,1] > 1.16)), axis = 0))[0] # Find useless distance row indices (No measurement or outside of PROMISE range)
+useless = np.where(np.any((distances[:,2] <=0, distances[:,2] > 10, distances[:,0] < 0, distances[:,0] > 40, np.abs(distances[:,1]) > 1.16), axis = 0))[0] # Find useless distance row indices (No measurement or outside of PROMISE range)
 useful_distances = np.delete(distances, useless, axis = 0) # Remove useless rows
 
 hdul = fits.open("Data/Masked_Data.fits") # Load in masked PROMISE data from FITS file
@@ -17,7 +17,7 @@ for x in range(0, np.shape(data)[1]-1): # Finds places to slice the total data f
     if sum(data[:,x]) == 0 and sections_vertical[-1] + 8000 < x:
         sections_vertical.append(x)
 sections_vertical.append(120000)
-print(sections_vertical)
+
 xdists = []
 unsorted_clouds = []
 

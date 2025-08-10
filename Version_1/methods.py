@@ -32,6 +32,7 @@ def dendro_to_distance(d, mask, points, distances): #Initiates distance determin
 def id_assignment(id_matrix, distance_matrix, confidence_matrix, table, points, counter, cloud):
     import numpy as np
     from scipy import ndimage
+    from scipy import constants
     masked_distance = (confidence_matrix >= 3)*distance_matrix
     labels, nums = ndimage.label(masked_distance.T)
     labels = labels.T
@@ -44,13 +45,13 @@ def id_assignment(id_matrix, distance_matrix, confidence_matrix, table, points, 
         y,x = np.unravel_index(masked_data.argmax(), masked_data.shape) + np.array([1,1])
         l = cloud.l0+x*cloud.dl
         b = cloud.b0+y*cloud.db
-        dist = np.unique(distance)[1]
+        dist = float(f"{np.unique(distance)[1]:.2f}")
         pixel_area = dist**2*np.abs(cloud.dl*cloud.db*np.pi**2/(180**2))*10**2
         area = np.sum(mask)*pixel_area
         conf = "A"
         if np.unique(confidence)[1] == 3:
             conf = "B"
-        mass = np.sum(masked_data)*pixel_area
+        mass = np.sum(masked_data)*pixel_area*((3.086e18)**2)*constants.m_p
         no_of_points = 0
         for i, p in enumerate(points):
             if mask[int(p[1]),int(p[0])]:

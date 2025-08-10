@@ -43,12 +43,12 @@ for key in clouds: # Iterates through each cloud
     print(f"Done with cloud {key[6:]} out of {len(clouds)-1}.")
 
 table = table[1:]
-df = pd.DataFrame(table, columns = ["ID", "l", "b", "Area [pc^2]", "Distance", "Flag", "Mass", "# of distance points"])
+df = pd.DataFrame(table, columns = ["ID", "l [deg]", "b [deg]", "Area [pc^2]", "Distance [kpc]", "Flag", "Mass [kg]", "# of distance points"])
 
 max_lengths = df.map(str).map(len).max()
 df = df.apply(lambda col: col.str.pad(max_lengths[col.name], side='right'))
 
-df.to_csv("ID_list.tsv", index = False, sep = "\t")
+df.to_csv("Product/ID_catalogue.tsv", index = False, sep = "\t")
 
 hdr.set("NAXIS", 3) # Update headers
 hdr.set("NAXIS3", 3, after = "NAXIS2")
