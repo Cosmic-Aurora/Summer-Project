@@ -57,8 +57,8 @@ for row in useful_map:
 
 for i, t in enumerate(topdown): # Creates and saves an image for each scaling factor
     fig, ax = plt.subplots(1,3,figsize = (16,16))
-    ax[0].imshow(np.log(t+1), origin="lower", extent=(-6.5,0,0,10))
+    ax[0].imshow(t, origin="lower", extent=(-6.5,0,0,10))
     ax[1].imshow(map[i], origin = "lower", extent = (-6.5,0,0,10), cmap = "autumn_r")
-    ax[1].imshow(np.log(t+1), origin="lower", extent=(-6.5,0,0,10), alpha = 0.5)
+    ax[1].imshow(t, origin="lower", extent=(-6.5,0,0,10), alpha = 0.5)
     ax[2].imshow(map[i], origin = "lower", extent = (-6.5,0,0,10), cmap = "autumn_r")
-    plt.savefig(f"Product/Images/milky_way_{10*scaling_factors[i]}_px_comparison.png", dpi = 1000, bbox_inches="tight")
+    plt.savefig(f"Product/Images/milky_way_{10*scaling_factors[i]}_px_comp_lin.png", dpi = 1000, bbox_inches="tight")

@@ -27,41 +27,7 @@ def dendro_to_distance(d, mask, points, distances): #Initiates distance determin
     confidence_matrix = np.zeros_like(mask).astype(int)
     for s in d.trunk:
         distance_matrix, confidence_matrix = distance_loop(d, s, mask, distance_matrix, confidence_matrix, points, distances)
-    return distance_matrix, confidence_matrix
-
-def id_assignment(id_matrix, distance_matrix, confidence_matrix, table, points, counter, cloud):
-    import numpy as np
-    from scipy import ndimage
-    from scipy import constants
-    masked_distance = (confidence_matrix >= 3)*distance_matrix
-    labels, nums = ndimage.label(masked_distance.T)
-    labels = labels.T
-    for i in range(nums):
-        id_matrix = np.where(labels == i+1, counter, id_matrix)
-        mask = id_matrix == counter
-        distance = masked_distance*mask
-        masked_data = cloud.data*mask
-        confidence = confidence_matrix*mask
-        y,x = np.unravel_index(masked_data.argmax(), masked_data.shape) + np.array([1,1])
-        l = cloud.l0+x*cloud.dl
-        b = cloud.b0+y*cloud.db
-        dist = float(f"{np.unique(distance)[1]:.2f}")
-        pixel_area = dist**2*np.abs(cloud.dl*cloud.db*np.pi**2/(180**2))*10**2
-        area = np.sum(mask)*pixel_area
-        conf = "A"
-        if np.unique(confidence)[1] == 3:
-            conf = "B"
-        mass = np.sum(masked_data)*pixel_area*((3.086e18)**2)*constants.m_p
-        no_of_points = 0
-        for i, p in enumerate(points):
-            if mask[int(p[1]),int(p[0])]:
-                no_of_points += 1
-        table_row = np.array([counter, l, b, area, dist, conf, mass, no_of_points])
-        table = np.vstack((table, table_row))
-        counter += 1
-    return id_matrix, table, counter
-    
-    
+    return distance_matrix, confidence_matrix   
 
 def distance_loop(d, s, mask, distance_matrix, confidence_matrix, points, distances): # Loops through the dendrogram, assignaing distances and certanties to areas
     import numpy as np
@@ -141,3 +107,37 @@ def distance_loop(d, s, mask, distance_matrix, confidence_matrix, points, distan
             confidence_matrix = np.where(confidence_matrix*structure_mask == A, B, confidence_matrix) # Replaces confidence level A with B in above structure(s)
             confidence_matrix = np.where(confidence_matrix == 0, D*structure_mask, confidence_matrix) # Assigns confidence level D to current structure
             return distance_matrix, confidence_matrix
+        
+
+def id_assignment(id_matrix, distance_matrix, confidence_matrix, table, points, counter, cloud):
+    import numpy as np
+    from scipy import ndimage
+    from scipy import constants
+    masked_distance = (confidence_matrix >= 3)*distance_matrix # Removes all distances below confidence class B
+    labels, nums = ndimage.label(masked_distance.T) # Labels each separate area, transposes to make the order left to right instead of top to bottom
+    labels = labels.T
+    for i in range(nums): # Loops through each isolated area
+        id_matrix = np.where(labels == i+1, counter, id_matrix) # Gives an isolated area the correct ID and adds it to the matrix that will be returned 
+        mask = id_matrix == counter # Creates a True/False mask that only contains the current isolates area
+        distance = masked_distance*mask # Creates a distance matrix only containing the isolates area
+        masked_data = cloud.data*mask # Removes everything outside the mask from the cloud data
+        confidence = confidence_matrix*mask 
+        y,x = np.unravel_index(masked_data.argmax(), masked_data.shape) + np.array([1,1]) # Finds the indices of the highest magnitude
+        l = cloud.l0+x*cloud.dl # Converts indices to galactic longitude and latitude
+        b = cloud.b0+y*cloud.db
+        dist = float(f"{np.unique(distance)[1]:.2f}") # Extracts the assigned cloud distance
+        pixel_area = 4*(dist*1000)**2*np.abs(np.tan(cloud.dl*np.pi/360)*np.tan(cloud.db*np.pi/360)) # Calculates how large each pixel is in pc^2
+        area = np.sum(mask)*pixel_area # Calculates area of the cloud
+        conf = "A"
+        if np.unique(confidence)[1] == 3: # Extracts the cloud confidence class
+            conf = "B"
+        mass = np.sum(masked_data)*pixel_area*((3.086e18)**2)*9.4e20*2*constants.m_p*1.4/(2e30) # Calculates mass of the cloud in solar masses
+        no_of_points = 0
+        for i, p in enumerate(points): # Finds number of distance datapoints within the cloud
+            if mask[int(p[1]),int(p[0])]:
+                no_of_points += 1
+        table_row = np.array([counter, l, b, area, dist, conf, mass, no_of_points]) # Saves and appends the cloud properties to the catalogue table
+        table = np.vstack((table, table_row))
+        counter += 1
+    return id_matrix, table, counter
+   

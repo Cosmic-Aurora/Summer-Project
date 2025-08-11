@@ -13,12 +13,14 @@ full_distances = np.zeros_like(full_data) # Creates three copies with only zeroe
 confidence = np.zeros_like(full_data)
 identities = np.zeros_like(full_data)
 
+smoothing_level = 5
+
 clouds = cloud.loadclouds("Data/clouds.pkl") # Opens the cloud dictionary
 
 central_x = hdr["CRPIX1"]
 central_y = hdr["CRPIX2"]
 
-counter = 1
+counter = 1 # Used to assign ID:s to clouds, increases by 1 every time is assigns an ID, thus making sure each cloud gets a different one
 table = np.zeros(8)
 
 for key in clouds: # Iterates through each cloud
@@ -31,7 +33,7 @@ for key in clouds: # Iterates through each cloud
     distances = cl.distances[:,4] # Extracts distance values
     data = cl.data # Exctracts data image
     mask = data != 0 # Creates a mask of the data
-    g_data = sc.ndimage.gaussian_filter(data,5)*mask # Applies a gaussian smoothing to the data
+    g_data = sc.ndimage.gaussian_filter(data,smoothing_level)*mask # Applies a gaussian smoothing to the data
     d = ad.Dendrogram.compute(g_data, min_delta = 0.1, min_value = 0.1, is_independent = ad.pruning.contains_seeds(points[:,::-1].T.astype(int))) # Computes a dendrogram for the smoothed image
 
     distance_matrix, confidence_matrix = dendro_to_distance(d, mask, points, distances) # Computed the distance and confidence matrix of the cloud (see methods.py for more detail)
@@ -43,7 +45,7 @@ for key in clouds: # Iterates through each cloud
     print(f"Done with cloud {key[6:]} out of {len(clouds)-1}.")
 
 table = table[1:]
-df = pd.DataFrame(table, columns = ["ID", "l [deg]", "b [deg]", "Area [pc^2]", "Distance [kpc]", "Flag", "Mass [kg]", "# of distance points"])
+df = pd.DataFrame(table, columns = ["ID", "l [deg]", "b [deg]", "Area [pc^2]", "Distance [kpc]", "Flag", "Mass [M_o]", "# of distance points"])
 
 max_lengths = df.map(str).map(len).max()
 df = df.apply(lambda col: col.str.pad(max_lengths[col.name], side='right'))
