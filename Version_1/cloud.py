@@ -28,6 +28,10 @@ class Cloud:
     # var - variance of the distances within the mask
     # n - number of distance measurements withing the mask
     # diff - difference between furthest distance data point and closest within mask (-1 if there is not data)
+    
+    # distance_matrix - 2D matrix where assigned distances are in kpc and areas with no distance have value 0
+    # confidence_matrix - 2D matrix showing the confidence class the different areas of the cloud object belong to
+    # id_matrix - 2D matrix showing the assigned id numbers to the different clouds of sufficient confidence level within the cloud object
 
     def __init__(self, data, distances, hdr, dx, dy):
         import numpy as np
@@ -104,6 +108,11 @@ class Cloud:
         self.median = np.median(self.distances[:,4])
         self.var = np.var(self.distances[:,4])
         self.diff = np.max(self.distances[:,4], initial = -1)-np.min(self.distances[:,4], initial = 99)       
+    
+    def add_distance(self,distance_matrix, confidence_matrix, id_matrix): # Saves a cloud-sized version of the final product in the cloud object
+        self.distance_matrix = distance_matrix
+        self.confidence_matrix = confidence_matrix
+        self.id_matrix = id_matrix
 
 
 def saveclouds(clouds, filename): # Saves a cloud or a set of clouds

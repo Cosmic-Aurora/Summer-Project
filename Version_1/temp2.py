@@ -25,3 +25,20 @@ for i, t in enumerate(topdown): # Creates and saves an image for each scaling fa
     plt.figure(figsize = (16,8))
     plt.imshow(t, origin="lower", extent=(-6.5,0,0,10), cmap = "autumn_r")
     plt.savefig(f"Product/Images/milky_way_{10*scaling_factors[i]}_px_reference.png", dpi = 1000, bbox_inches="tight")
+    
+xlist = []
+ylist = []
+
+for row in useful_map:
+    flattened_distance = row[2]*np.cos(row[1]*np.pi/180)/1000
+    ylist.append(flattened_distance*np.cos(row[0]*np.pi/180))
+    xlist.append(int(6.5)-flattened_distance*np.sin(row[0]*np.pi/180))
+
+for i, t in enumerate(topdown): # Creates and saves an image for each scaling factor
+    fig, ax = plt.subplots(1,3,figsize = (16,16))
+    thing = ax[0].imshow(t, origin="lower", extent=(-6.5,0,0,10))
+    ax[1].contour(xlist, ylist, useful_map[:,3], origin = "lower", extent = (-6.5,0,0,10))
+    ax[1].imshow(t, origin="lower", extent=(-6.5,0,0,10), alpha = 0.5)
+    ax[2].contour(xlist, ylist, useful_map[:,3], origin = "lower", extent = (-6.5,0,0,10))
+    fig.colorbar(thing, ax = ax[0])
+    plt.savefig(f"Images/milky_way_{10*scaling_factors[i]}_px_comp_lin.png", dpi = 1000, bbox_inches="tight")

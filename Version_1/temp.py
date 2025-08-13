@@ -13,7 +13,7 @@ clouds = cloud.loadclouds("Data/clouds.pkl")
 
 cl = clouds["cloud_0"]
 
-table = np.zeros(9)
+table = np.zeros(8)
 counter = 1
 
 points = cl.distances[:,:2] # Extracts pixel position of distance mearuements within cloud
@@ -28,7 +28,7 @@ id_matrix, table, counter = id_assignment(np.zeros_like(confidence_matrix), dist
 
 np.savetxt("Product/temp.txt", table[1:],fmt="%s", delimiter="\t") # Saves the matrix
 
-df = pd.DataFrame(table[1:], columns = ["ID", "l", "b", "Area [pc^2]", "Distance", "Flag", "Mass", "# of distance points", "pixel_area"])
+df = pd.DataFrame(table[1:])
 
 max_lengths = df.map(str).map(len).max()
 #max_lengths = np.max(max_lengths, df.columns.str.len(), axis = 0)
@@ -37,4 +37,4 @@ max_lengths = df.map(str).map(len).max()
 
 df = df.apply(lambda col: col.str.pad(max_lengths[col.name], side='right'))
 
-df.to_csv("Product/temp.txt", index = False, sep = "\t")
+df.to_csv("Product/temp.txt", index = False, sep = "\t", header = False)

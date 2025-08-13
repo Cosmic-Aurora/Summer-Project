@@ -26,6 +26,8 @@ table = np.zeros(8)
 for key in clouds: # Iterates through each cloud
     cl = clouds[key]
     if cl.n == 0: # Does nothing if the cloud contains no distance measurements
+        cl.add_distance(np.zeros_like(cl.data),np.zeros_like(cl.data),np.zeros_like(cl.data))
+        clouds[key] = cl
         print(f"Done with cloud {key[6:]} out of {len(clouds)-1}.")
         continue
     
@@ -38,6 +40,8 @@ for key in clouds: # Iterates through each cloud
 
     distance_matrix, confidence_matrix = dendro_to_distance(d, mask, points, distances) # Computed the distance and confidence matrix of the cloud (see methods.py for more detail)
     id_matrix, table, counter = id_assignment(np.zeros_like(confidence_matrix), distance_matrix, confidence_matrix, table, points, counter, cl)
+    cl.add_distance(distance_matrix, confidence_matrix, id_matrix)
+    clouds[key] = cl
     full_distances[int(central_y - cl.yc): int(central_y - cl.yc + cl.delta_y),int(central_x - cl.xc): int(central_x - cl.xc + cl.delta_x)] += distance_matrix # Adds the cloud distance to the full matrix
     confidence[int(central_y - cl.yc): int(central_y - cl.yc + cl.delta_y),int(central_x - cl.xc): int(central_x - cl.xc + cl.delta_x)] += confidence_matrix # Adds the cloud confidence to the full matrix
     identities[int(central_y - cl.yc): int(central_y - cl.yc + cl.delta_y),int(central_x - cl.xc): int(central_x - cl.xc + cl.delta_x)] += id_matrix # Adds the cloud id to the full matrix
@@ -45,15 +49,17 @@ for key in clouds: # Iterates through each cloud
     print(f"Done with cloud {key[6:]} out of {len(clouds)-1}.")
 
 table = table[1:]
-df = pd.DataFrame(table, columns = ["ID", "l [deg]", "b [deg]", "Area [pc^2]", "Distance [kpc]", "Flag", "Mass [M_o]", "# of distance points"])
+df = pd.DataFrame(table)
 
 max_lengths = df.map(str).map(len).max()
 df = df.apply(lambda col: col.str.pad(max_lengths[col.name], side='right'))
 
-df.to_csv("Product/ID_catalogue.tsv", index = False, sep = "\t")
+df.to_csv("Product/ID_catalogue.tsv", index = False, sep = "\t", header = False)
 
 hdr.set("NAXIS", 3) # Update headers
 hdr.set("NAXIS3", 3, after = "NAXIS2")
+
+cloud.saveclouds(clouds, "Data/clouds.pkl")
 
 data = np.array([full_distances, confidence, identities]).astype(np.float32) # Combine 2 2D matrices to a 3D one
 
