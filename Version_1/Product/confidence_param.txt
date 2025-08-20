@@ -1,5 +1,0 @@
-Flag	Number	# of clouds	% of area covered	% of area covered by this and higher confidences	Description
-A	4	1171.0	0.2089801178428052	0.2089801178428052	Clouds without any conflicts.
-B	3	2014.0	0.08257349597172418	0.2915536138145294	Leaves/branches with no conflicts but with conflicts further down on the trunk.
-C	2	2107.0	0.014829762945323028	0.30638337675985244	Leaves with conflicts.
-D	1	1480.0	0.07625628805402011	0.3826396648138725	Branches with conflicts.

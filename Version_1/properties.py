@@ -38,4 +38,4 @@ df = pd.DataFrame(final_matrix, columns = ["Flag", "Value", "# of clouds", r"% o
 max_lengths = df.map(str).map(len).max()
 df = df.apply(lambda col: col.str.pad(max_lengths[col.name], side='right'))
 
-df.to_csv("Product/confidence_param.tsv", index = False, sep = "\t")
+df.to_csv("Analysis/confidence_param.tsv", index = False, sep = "\t")

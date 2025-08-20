@@ -141,3 +141,13 @@ def id_assignment(id_matrix, distance_matrix, confidence_matrix, table, points, 
         counter += 1
     return id_matrix, table, counter
    
+
+def gaussian_fourier_filter(M,N,sigma):
+    import numpy as np
+    import cmath
+    filter = np.ones((M,N))
+    for u in range(M):
+        for v in range(N):
+            filter[u,v] = np.sum([[np.exp(-(x**2+y**2)/(2*sigma**2)-2*np.pi*u*x/M-2*np.pi*v*y/N) for x in range(M)] for y in range(N)])
+        print(u)
+    return filter

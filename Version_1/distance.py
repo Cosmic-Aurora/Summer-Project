@@ -25,7 +25,7 @@ table = np.zeros(8)
 
 for key in clouds: # Iterates through each cloud
     cl = clouds[key]
-    if cl.n == 0: # Does nothing if the cloud contains no distance measurements
+    if cl.n == 0: # Does nothing apart from adding empty matrices to the clouds if it contains no distance measurements
         cl.add_distance(np.zeros_like(cl.data),np.zeros_like(cl.data),np.zeros_like(cl.data))
         clouds[key] = cl
         print(f"Done with cloud {key[6:]} out of {len(clouds)-1}.")
@@ -40,7 +40,7 @@ for key in clouds: # Iterates through each cloud
 
     distance_matrix, confidence_matrix = dendro_to_distance(d, mask, points, distances) # Computed the distance and confidence matrix of the cloud (see methods.py for more detail)
     id_matrix, table, counter = id_assignment(np.zeros_like(confidence_matrix), distance_matrix, confidence_matrix, table, points, counter, cl)
-    cl.add_distance(distance_matrix, confidence_matrix, id_matrix)
+    cl.add_distance(distance_matrix, confidence_matrix, id_matrix) # Adds distance, confidence and id matrices to the cloud object for use in future analysis
     clouds[key] = cl
     full_distances[int(central_y - cl.yc): int(central_y - cl.yc + cl.delta_y),int(central_x - cl.xc): int(central_x - cl.xc + cl.delta_x)] += distance_matrix # Adds the cloud distance to the full matrix
     confidence[int(central_y - cl.yc): int(central_y - cl.yc + cl.delta_y),int(central_x - cl.xc): int(central_x - cl.xc + cl.delta_x)] += confidence_matrix # Adds the cloud confidence to the full matrix

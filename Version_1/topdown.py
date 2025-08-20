@@ -64,11 +64,16 @@ for row in useful_map:
 for i, t in enumerate(topdown): # Creates and saves an image for each scaling factor
     plt.figure(figsize = (16,10))
     plt.imshow(np.log(t), origin="lower", extent=(-6.5,0,0,10))
-    plt.colorbar()
-    plt.savefig(f"Images/milky_way_{10*scaling_factors[i]}_px.png", dpi = 1000, bbox_inches="tight")
+    plt.colorbar(label = r"Logarithmized column density [M$_{\odot}$/pc$^2$]")
+    plt.xlabel("kpc")
+    plt.ylabel("kpc")
+    plt.savefig(f"Analysis/Images/milky_way_{10*scaling_factors[i]}_px.png", dpi = 1000, bbox_inches="tight")
+    
     
     plt.figure(figsize=(16,10))
     plt.imshow(np.log(t), origin="lower", extent=(-6.5,0,0,10))
-    plt.colorbar()
+    plt.colorbar(label = r"Logarithmized column density [M$_{\odot}$/pc$^2$]")
+    plt.xlabel("kpc")
+    plt.ylabel("kpc")
     plt.contour(map, origin = "lower", extent = (-6.5,0,0,10), cmap = "autumn_r")
-    plt.savefig(f"Images/milky_way_{10*scaling_factors[i]}_px_comp.png", dpi = 1000, bbox_inches="tight")
+    plt.savefig(f"Analysis/Images/milky_way_{10*scaling_factors[i]}_px_comp.png", dpi = 1000, bbox_inches="tight")
