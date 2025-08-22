@@ -140,14 +140,18 @@ def id_assignment(id_matrix, distance_matrix, confidence_matrix, table, points, 
         table = np.vstack((table, table_row))
         counter += 1
     return id_matrix, table, counter
-   
 
-def gaussian_fourier_filter(M,N,sigma):
+def gaussian_kernel(matrix, sigma):
     import numpy as np
-    import cmath
-    filter = np.ones((M,N))
-    for u in range(M):
-        for v in range(N):
-            filter[u,v] = np.sum([[np.exp(-(x**2+y**2)/(2*sigma**2)-2*np.pi*u*x/M-2*np.pi*v*y/N) for x in range(M)] for y in range(N)])
-        print(u)
-    return filter
+    import matplotlib.pyplot as plt
+    M,N = np.shape(matrix)
+    half_x = (M-1)/2
+    half_y = (N-1)/2
+    for i in range(M):
+        for j in range(N):
+            matrix[i,j] = (i-half_x)**2+(j-half_y)**2
+    plt.imshow(matrix)
+    plt.show()
+    matrix = 1/(2*np.pi*sigma**2)*np.exp(-matrix/(2*sigma**2))
+    return matrix
+   
