@@ -6,14 +6,14 @@ import astrodendro as ad
 from methods import *
 import pandas as pd
 
-hdul = fits.open("Data/Full_Data.fits") # Opens the PROMISE data (this is used purely to determine the size of the matrix that is to be created, as well as to copy the header and extract some values)
+hdul = fits.open("Data/Masked_Data.fits") # Opens the PROMISE data (this is used purely to determine the size of the matrix that is to be created, as well as to copy the header and extract some values)
 hdr = hdul[0].header
 full_data = hdul[0].data
-full_distances = np.zeros_like(full_data) # Creates three copies with only zeroes from the data, one for distance data and one for confidence
+full_distances = np.zeros_like(full_data) # Creates three copies with only zeroes from the data, one for distance data, one for confidence, and one for catalogue id
 confidence = np.zeros_like(full_data)
 identities = np.zeros_like(full_data)
 
-smoothing_level = 5
+smoothing_level = 5 # The value of sigma in the Gaussian smoothing done in order to avoid rough cloud edges
 
 clouds = cloud.loadclouds("Data/clouds.pkl") # Opens the cloud dictionary
 
@@ -21,7 +21,7 @@ central_x = hdr["CRPIX1"]
 central_y = hdr["CRPIX2"]
 
 counter = 1 # Used to assign ID:s to clouds, increases by 1 every time is assigns an ID, thus making sure each cloud gets a different one
-table = np.zeros(8)
+table = np.zeros(8) # The start of the catalogue
 
 for key in clouds: # Iterates through each cloud
     cl = clouds[key]
@@ -48,21 +48,21 @@ for key in clouds: # Iterates through each cloud
     
     print(f"Done with cloud {key[6:]} out of {len(clouds)-1}.")
 
-table = table[1:]
-df = pd.DataFrame(table)
+table = table[1:] # Removes the first row as it is empty
+df = pd.DataFrame(table) # Converts the matric to a Pandas dataframe
 
 max_lengths = df.map(str).map(len).max()
-df = df.apply(lambda col: col.str.pad(max_lengths[col.name], side='right'))
+df = df.apply(lambda col: col.str.pad(max_lengths[col.name], side='right')) # Makes all entries in the same colums equal length in order to increase display clarity when looking at the catalogue
 
-df.to_csv("Product/ID_catalogue.tsv", index = False, sep = "\t", header = False)
+df.to_csv("Product/ID_catalogue.tsv", index = False, sep = "\t", header = False) # Saves the catalogue
 
 hdr.set("NAXIS", 3) # Update headers
 hdr.set("NAXIS3", 3, after = "NAXIS2")
 
-cloud.saveclouds(clouds, "Data/clouds.pkl")
+cloud.saveclouds(clouds, "Data/clouds.pkl") # Saves the updated cloud objects in the same place as they were previously
 
 data = np.array([full_distances, confidence, identities]).astype(np.float32) # Combine 2 2D matrices to a 3D one
 
-hdu_new = fits.PrimaryHDU(data, hdr) # Save the combines distance and confidence matrix to a FITS file
+hdu_new = fits.PrimaryHDU(data, hdr) # Save the combined distance, confidence, and id matrix to a FITS file
 hdul_new = fits.HDUList([hdu_new])
 hdu_new.writeto(fr"Product/distance_mask.fits", overwrite = True)

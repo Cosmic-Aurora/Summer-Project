@@ -3,9 +3,14 @@ from astropy.io import fits
 import matplotlib.pyplot as plt
 from scipy import constants
 
-milky_way_map = np.loadtxt("Data/finalmap.dat",usecols = (0,1,2,3)) # Load in distance data files
-useless = np.where(np.any((milky_way_map[:,2] <=0., milky_way_map[:,2] >= 10000.,milky_way_map[:,0] < 0, milky_way_map[:,0] > 40, np.abs(milky_way_map[:,1]) > 1.16), axis = 0))[0] # Find useless distance row indices (No measurement or outside of PROMISE range)
-useful_map = np.delete(milky_way_map, useless, axis = 0) # Remove useless rows
+compare = True
+
+try:
+    milky_way_map = np.loadtxt("Data/finalmap.dat",usecols = (0,1,2,3)) # Load in distance data files
+    useless = np.where(np.any((milky_way_map[:,2] <=0., milky_way_map[:,2] >= 10000.,milky_way_map[:,0] < 0, milky_way_map[:,0] > 40, np.abs(milky_way_map[:,1]) > 1.16), axis = 0))[0] # Find useless distance row indices (No measurement or outside of PROMISE range)
+    useful_map = np.delete(milky_way_map, useless, axis = 0) # Remove useless rows
+except:
+    compare = False
 
 hdul = fits.open("Product/distance_mask.fits") # Open distance and confidence data
 hdr = hdul[0].header
@@ -20,8 +25,10 @@ conf = 3 # Lowest confidence level distance to be included
 mask = confidence >= conf # Removes all distance data with too low confidence
 distances = data*mask
 
-scaling_factors = np.array([6,10,20,40])
+scaling_factors = np.array([6,10,20,40]) # Modify for different resolutions
+
 comp_scaling_factor = 8 # Resolution of inmages to row[1]e created (value x will result in a resolution of 10x*6.5x)
+
 topdown = []
 map = np.zeros((10*comp_scaling_factor, int(6.5*comp_scaling_factor)))
 
@@ -51,17 +58,17 @@ for i in range(len(distances)): # Iterates through each pixel in the distance ma
                 pixel_mass = pixel_area*magnitude[i,j]*((3.086e18)**2)*9.4e20*2*constants.m_p*1.4/(2e30)
                 column_density = pixel_mass*s**2/1e6 # Calculates the column density that the pixel adds in solar masses/pc^2
                 topdown[k][y,x] += column_density
-
-for row in useful_map:
-    flattened_distance = row[2]*np.cos(row[1]*np.pi/180)*comp_scaling_factor/1000
-    y = int(flattened_distance*np.cos(row[0]*np.pi/180))
-    x = int(int(6.5*comp_scaling_factor)-1-flattened_distance*np.sin(row[0]*np.pi/180))
-    map[y,x] += row[3]
-
-
+if compare:
+    for row in useful_map:
+        flattened_distance = row[2]*np.cos(row[1]*np.pi/180)*comp_scaling_factor/1000
+        y = int(flattened_distance*np.cos(row[0]*np.pi/180))
+        x = int(int(6.5*comp_scaling_factor)-1-flattened_distance*np.sin(row[0]*np.pi/180))
+        map[y,x] += row[3]
 
 
-for i, t in enumerate(topdown): # Creates and saves an image for each scaling factor
+
+
+for i, t in enumerate(topdown): # Creates and saves an two images for each scaling factor, one with the comparison and one without
     plt.figure(figsize = (16,10))
     plt.imshow(np.log(t), origin="lower", extent=(-6.5,0,0,10))
     plt.colorbar(label = r"Logarithmized column density [M$_{\odot}$/pc$^2$]")
@@ -69,11 +76,11 @@ for i, t in enumerate(topdown): # Creates and saves an image for each scaling fa
     plt.ylabel("kpc")
     plt.savefig(f"Analysis/Images/milky_way_{10*scaling_factors[i]}_px.png", dpi = 1000, bbox_inches="tight")
     
-    
-    plt.figure(figsize=(16,10))
-    plt.imshow(np.log(t), origin="lower", extent=(-6.5,0,0,10))
-    plt.colorbar(label = r"Logarithmized column density [M$_{\odot}$/pc$^2$]")
-    plt.xlabel("kpc")
-    plt.ylabel("kpc")
-    plt.contour(map, origin = "lower", extent = (-6.5,0,0,10), cmap = "autumn_r")
-    plt.savefig(f"Analysis/Images/milky_way_{10*scaling_factors[i]}_px_comp.png", dpi = 1000, bbox_inches="tight")
+    if compare:
+        plt.figure(figsize=(16,10))
+        plt.imshow(np.log(t), origin="lower", extent=(-6.5,0,0,10))
+        plt.colorbar(label = r"Logarithmized column density [M$_{\odot}$/pc$^2$]")
+        plt.xlabel("kpc")
+        plt.ylabel("kpc")
+        plt.contour(map, origin = "lower", extent = (-6.5,0,0,10), cmap = "autumn_r")
+        plt.savefig(f"Analysis/Images/milky_way_{10*scaling_factors[i]}_px_comp.png", dpi = 1000, bbox_inches="tight")

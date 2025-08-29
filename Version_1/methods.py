@@ -140,18 +140,3 @@ def id_assignment(id_matrix, distance_matrix, confidence_matrix, table, points, 
         table = np.vstack((table, table_row))
         counter += 1
     return id_matrix, table, counter
-
-def gaussian_kernel(matrix, sigma):
-    import numpy as np
-    import matplotlib.pyplot as plt
-    M,N = np.shape(matrix)
-    half_x = (M-1)/2
-    half_y = (N-1)/2
-    for i in range(M):
-        for j in range(N):
-            matrix[i,j] = (i-half_x)**2+(j-half_y)**2
-    plt.imshow(matrix)
-    plt.show()
-    matrix = 1/(2*np.pi*sigma**2)*np.exp(-matrix/(2*sigma**2))
-    return matrix
-   
